@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+cargo clippy --all -- -D warnings
+
+for file in $(git diff --name-only --staged); do
+    if [ ! -f "$file" ]; then
+        continue
+    fi
+
+    case "$file" in
+    *.rs)
+        rustfmt --edition 2021 "$file"
+        ;;
+    *)
+        continue
+        ;;
+    esac
+
+    git add "$file"
+done
