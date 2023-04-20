@@ -99,30 +99,63 @@ mod tests {
         assert!(command.is_err());
     }
 
+    #[cfg(not(windows))]
     #[test]
     fn test_execute_status() {
-        assert!(Command::parse("bash -c 'exit 0'")
+        assert!(Command::parse("sh -c 'exit 0'")
             .unwrap()
             .execute_status()
             .is_ok());
 
-        assert!(Command::parse("bash -c 'exit 1'")
+        assert!(Command::parse("sh -c 'exit 1'")
             .unwrap()
             .execute_status()
             .is_err());
     }
 
+    #[cfg(not(windows))]
     #[test]
     fn test_execute_string() {
         assert_eq!(
-            Command::parse("bash -c 'echo 1'")
+            Command::parse("sh -c 'echo 1'")
                 .unwrap()
                 .execute_string()
                 .unwrap(),
             "1\n"
         );
 
-        assert!(Command::parse("bash -c 'exit 1'")
+        assert!(Command::parse("sh -c 'exit 1'")
+            .unwrap()
+            .execute_string()
+            .is_err());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn test_execute_status() {
+        assert!(Command::parse("cmd /c 'exit 0'")
+            .unwrap()
+            .execute_status()
+            .is_ok());
+
+        assert!(Command::parse("cmd /c 'exit 1'")
+            .unwrap()
+            .execute_status()
+            .is_err());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn test_execute_string() {
+        assert_eq!(
+            Command::parse("cmd /c 'echo 1'")
+                .unwrap()
+                .execute_string()
+                .unwrap(),
+            "1\r\n"
+        );
+
+        assert!(Command::parse("cmd /c 'exit 1'")
             .unwrap()
             .execute_string()
             .is_err());
