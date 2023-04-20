@@ -35,6 +35,10 @@ pub fn status(command_string: impl AsRef<str>) -> Result<ExitStatus> {
     execute_status(&mut parse(command_string)?)
 }
 
+pub fn string(command_string: impl AsRef<str>) -> Result<String> {
+    execute_string(&mut parse(command_string)?)
+}
+
 fn execute_status(command: &mut Command) -> Result<ExitStatus> {
     let status = command.status()?;
 
@@ -42,10 +46,6 @@ fn execute_status(command: &mut Command) -> Result<ExitStatus> {
         true => Ok(status),
         false => Err(Error::ExitStatus(status)),
     }
-}
-
-pub fn string(command_string: impl AsRef<str>) -> Result<String> {
-    execute_string(&mut parse(command_string)?)
 }
 
 fn execute_string(command: &mut Command) -> Result<String> {
