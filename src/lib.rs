@@ -1,13 +1,20 @@
 use std::process::Command;
+use thiserror::Error;
 
-pub fn parse(command_string: impl AsRef<str>) -> Command {
-    let [program, args @ ..] = &command_string.as_ref().split_whitespace().collect::<Vec<_>>()[..] else {
-        return Command::new("");
+#[derive(Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    Parse(#[from] shell_words::ParseError),
+}
+
+pub fn parse(command_string: impl AsRef<str>) -> Result<Command, Error> {
+    let [program, args @ ..] = &shell_words::split(command_string.as_ref())?[..] else {
+        return Ok(Command::new(""));
     };
 
     let mut command = Command::new(program);
     command.args(args);
-    command
+    Ok(command)
 }
 
 #[cfg(test)]
@@ -16,9 +23,19 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        let command = parse("program arg1 arg2");
+        let command = parse(r#"p a b"#).unwrap();
+        assert_eq!(command.get_program(), "p");
+        assert_eq!(command.get_args().collect::<Vec<_>>(), ["a", "b"]);
 
-        assert_eq!(command.get_program(), "program");
-        assert_eq!(command.get_args().collect::<Vec<_>>(), ["arg1", "arg2"]);
+        let command = parse(r#"p a "b c""#).unwrap();
+        assert_eq!(command.get_program(), "p");
+        assert_eq!(command.get_args().collect::<Vec<_>>(), ["a", "b c"]);
+
+        let command = parse(r#"p "a\"b""#).unwrap();
+        assert_eq!(command.get_program(), "p");
+        assert_eq!(command.get_args().collect::<Vec<_>>(), ["a\"b"]);
+
+        let command = parse(r#"p "a"#);
+        assert!(command.is_err());
     }
 }

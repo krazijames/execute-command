@@ -5,6 +5,10 @@ edition = "2021"
 description = "A simple library to execute commands"
 license = "MIT OR Apache-2.0"
 
+[dependencies]
+shell-words = "1.1"
+thiserror = "1.0"
+
 [dev-dependencies.cargo-husky]
 version = "1"
 default-features = false
