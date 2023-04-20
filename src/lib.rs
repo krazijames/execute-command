@@ -51,11 +51,10 @@ pub fn string(command_string: impl AsRef<str>) -> Result<String> {
 fn execute_string(command: &mut Command) -> Result<String> {
     let output = command.output()?;
 
-    if !output.status.success() {
-        return Err(Error::Output(output));
+    match output.status.success() {
+        true => Ok(String::from_utf8(output.stdout)?),
+        false => Err(Error::Output(output)),
     }
-
-    Ok(String::from_utf8(output.stdout)?)
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
