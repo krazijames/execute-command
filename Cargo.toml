@@ -3,6 +3,7 @@ name = "execute-command"
 version = "0.0.0"
 edition = "2021"
 description = "A simple library to execute commands"
+repository = "https://github.com/krazijames/execute-command"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
