@@ -1,4 +1,4 @@
-use std::process::{Command, ExitStatus};
+use std::process::{Command, ExitStatus, Output};
 use thiserror::Error;
 
 pub fn parse(command_string: impl AsRef<str>) -> Result<Command> {
@@ -20,22 +20,42 @@ fn execute_status(command: &mut Command) -> Result<ExitStatus> {
 
     match status.success() {
         true => Ok(status),
-        false => Err(Error::ExitStatusError(status)),
+        false => Err(Error::ExitStatus(status)),
     }
+}
+
+pub fn string(command_string: impl AsRef<str>) -> Result<String> {
+    execute_string(&mut parse(command_string)?)
+}
+
+fn execute_string(command: &mut Command) -> Result<String> {
+    let output = command.output()?;
+
+    if !output.status.success() {
+        return Err(Error::Output(output));
+    }
+
+    Ok(String::from_utf8(output.stdout)?)
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("process exited unsuccessfully: {0}")]
+    ExitStatus(ExitStatus),
+
+    #[error("process exited unsuccessfully: {}", .0.status)]
+    Output(Output),
+
     #[error(transparent)]
     ParseError(#[from] shell_words::ParseError),
 
     #[error(transparent)]
     IoError(#[from] std::io::Error),
 
-    #[error("process exited unsuccessfully: {0}")]
-    ExitStatusError(ExitStatus),
+    #[error(transparent)]
+    FromUtf8Error(#[from] std::string::FromUtf8Error),
 }
 
 #[cfg(test)]
@@ -64,5 +84,11 @@ mod tests {
     fn test_status() {
         assert!(status("bash -c 'exit 0'").is_ok());
         assert!(status("bash -c 'exit 1'").is_err());
+    }
+
+    #[test]
+    fn test_string() {
+        assert_eq!(string("bash -c 'echo 1'").unwrap(), "1\n");
+        assert!(string("bash -c 'exit 1'").is_err());
     }
 }
