@@ -4,4 +4,31 @@
 
 # execute-command
 
-A simple wrapper arround `Command` to execute programs more easily.
+A simple Rust package that wraps `Command` to simplify the execution of programs.
+
+## Usage
+
+Basic functions:
+
+```rust
+use execute_command as exec;
+
+let mut command = exec::parse("echo 1").unwrap();
+let status = exec::status("echo 1").unwrap();
+let output = exec::output("echo 1").unwrap();
+let string = exec::string("echo 1").unwrap();
+```
+
+Extending `Command`:
+
+```rust
+use execute_command::ExecuteCommand;
+use std::process::Command;
+
+let mut command = Command::parse("echo 1").unwrap();
+let status = Command::parse("echo 1").unwrap().execute_status().unwrap();
+let output = Command::parse("echo 1").unwrap().execute_output().unwrap();
+let string = Command::parse("echo 1").unwrap().execute_string().unwrap();
+```
+
+Note that these functions will return an error if the program exits with a non-zero status code.
