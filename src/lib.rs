@@ -2,31 +2,31 @@ use std::process::{Command, ExitStatus, Output};
 use thiserror::Error;
 
 pub trait ExecuteCommand {
-    fn parse(command_string: impl AsRef<str>) -> Result<Command>;
-    fn execute_status(&mut self) -> Result<ExitStatus>;
-    fn execute_output(&mut self) -> Result<Output>;
-    fn execute_string(&mut self) -> Result<String>;
+    fn parse(command_string: impl AsRef<str>) -> Result<Command, Error>;
+    fn execute_status(&mut self) -> Result<ExitStatus, Error>;
+    fn execute_output(&mut self) -> Result<Output, Error>;
+    fn execute_string(&mut self) -> Result<String, Error>;
 }
 
 impl ExecuteCommand for Command {
-    fn parse(command_string: impl AsRef<str>) -> Result<Command> {
+    fn parse(command_string: impl AsRef<str>) -> Result<Command, Error> {
         parse(command_string)
     }
 
-    fn execute_status(&mut self) -> Result<ExitStatus> {
+    fn execute_status(&mut self) -> Result<ExitStatus, Error> {
         execute_status(self)
     }
 
-    fn execute_output(&mut self) -> Result<Output> {
+    fn execute_output(&mut self) -> Result<Output, Error> {
         execute_output(self)
     }
 
-    fn execute_string(&mut self) -> Result<String> {
+    fn execute_string(&mut self) -> Result<String, Error> {
         execute_string(self)
     }
 }
 
-pub fn parse(command_string: impl AsRef<str>) -> Result<Command> {
+pub fn parse(command_string: impl AsRef<str>) -> Result<Command, Error> {
     let [program, args @ ..] = &shell_words::split(command_string.as_ref())?[..] else {
         return Ok(Command::new(""));
     };
@@ -36,19 +36,19 @@ pub fn parse(command_string: impl AsRef<str>) -> Result<Command> {
     Ok(command)
 }
 
-pub fn status(command_string: impl AsRef<str>) -> Result<ExitStatus> {
+pub fn status(command_string: impl AsRef<str>) -> Result<ExitStatus, Error> {
     execute_status(&mut parse(command_string)?)
 }
 
-pub fn output(command_string: impl AsRef<str>) -> Result<Output> {
+pub fn output(command_string: impl AsRef<str>) -> Result<Output, Error> {
     execute_output(&mut parse(command_string)?)
 }
 
-pub fn string(command_string: impl AsRef<str>) -> Result<String> {
+pub fn string(command_string: impl AsRef<str>) -> Result<String, Error> {
     execute_string(&mut parse(command_string)?)
 }
 
-fn execute_status(command: &mut Command) -> Result<ExitStatus> {
+fn execute_status(command: &mut Command) -> Result<ExitStatus, Error> {
     let status = command.status()?;
 
     match status.success() {
@@ -57,7 +57,7 @@ fn execute_status(command: &mut Command) -> Result<ExitStatus> {
     }
 }
 
-fn execute_output(command: &mut Command) -> Result<Output> {
+fn execute_output(command: &mut Command) -> Result<Output, Error> {
     let output = command.output()?;
 
     match output.status.success() {
@@ -66,13 +66,11 @@ fn execute_output(command: &mut Command) -> Result<Output> {
     }
 }
 
-fn execute_string(command: &mut Command) -> Result<String> {
+fn execute_string(command: &mut Command) -> Result<String, Error> {
     let output = execute_output(command)?;
 
     Ok(String::from_utf8(output.stdout)?)
 }
-
-pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Error, Debug)]
 pub enum Error {
