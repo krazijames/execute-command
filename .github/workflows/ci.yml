@@ -28,6 +28,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Format
+        run: cargo fmt --check
+
       - name: Test
         run: cargo test
 
