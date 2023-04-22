@@ -1,6 +1,6 @@
 [package]
 name = "execute-command"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "A simple Rust package that wraps `Command` to simplify the execution of programs."
 repository = "https://github.com/krazijames/execute-command"
