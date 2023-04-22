@@ -81,6 +81,8 @@ pub enum Error {
 mod tests {
     use super::*;
 
+    const BASE_COMMAND: &str = if cfg!(windows) { "cmd /C" } else { "sh -c" };
+
     #[test]
     fn test_parse() {
         let command = Command::parse(r#"p a b"#).unwrap();
@@ -99,63 +101,30 @@ mod tests {
         assert!(command.is_err());
     }
 
-    #[cfg(not(windows))]
     #[test]
     fn test_execute_status() {
-        assert!(Command::parse("sh -c 'exit 0'")
+        assert!(Command::parse(format!("{BASE_COMMAND} 'exit 0'"))
             .unwrap()
             .execute_status()
             .is_ok());
 
-        assert!(Command::parse("sh -c 'exit 1'")
+        assert!(Command::parse(format!("{BASE_COMMAND} 'exit 1'"))
             .unwrap()
             .execute_status()
             .is_err());
     }
 
-    #[cfg(not(windows))]
     #[test]
     fn test_execute_string() {
         assert_eq!(
-            Command::parse("sh -c 'echo 1'")
+            Command::parse(format!("{BASE_COMMAND} 'echo 1'"))
                 .unwrap()
                 .execute_string()
                 .unwrap(),
-            "1\n"
+            if cfg!(windows) { "1\r\n" } else { "1\n" }
         );
 
-        assert!(Command::parse("sh -c 'exit 1'")
-            .unwrap()
-            .execute_string()
-            .is_err());
-    }
-
-    #[cfg(windows)]
-    #[test]
-    fn test_execute_status() {
-        assert!(Command::parse("cmd /c 'exit 0'")
-            .unwrap()
-            .execute_status()
-            .is_ok());
-
-        assert!(Command::parse("cmd /c 'exit 1'")
-            .unwrap()
-            .execute_status()
-            .is_err());
-    }
-
-    #[cfg(windows)]
-    #[test]
-    fn test_execute_string() {
-        assert_eq!(
-            Command::parse("cmd /c 'echo 1'")
-                .unwrap()
-                .execute_string()
-                .unwrap(),
-            "1\r\n"
-        );
-
-        assert!(Command::parse("cmd /c 'exit 1'")
+        assert!(Command::parse(format!("{BASE_COMMAND} 'exit 1'"))
             .unwrap()
             .execute_string()
             .is_err());
