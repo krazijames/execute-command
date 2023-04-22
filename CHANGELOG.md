@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased](https://github.com/krazijames/execute-command/compare/v0.3.0...HEAD)
 
+### Removed
+
+- Remove `Result`. c877101eb0fe6601e140a0f4a1cc2066f6faff3c
+
 ## [0.3.0](https://github.com/krazijames/execute-command/compare/v0.2.0...v0.3.0) - 2023-04-22
 
 ### Added
