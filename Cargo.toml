@@ -2,7 +2,7 @@
 name = "execute-command"
 version = "0.2.0"
 edition = "2021"
-description = "A simple library to execute commands"
+description = "A simple wrapper arround `Command` to execute programs more easily."
 repository = "https://github.com/krazijames/execute-command"
 license = "MIT"
 
