@@ -4,6 +4,7 @@ use thiserror::Error;
 pub trait ExecuteCommand {
     fn parse(command_string: impl AsRef<str>) -> Result<Command>;
     fn execute_status(&mut self) -> Result<ExitStatus>;
+    fn execute_output(&mut self) -> Result<Output>;
     fn execute_string(&mut self) -> Result<String>;
 }
 
@@ -14,6 +15,10 @@ impl ExecuteCommand for Command {
 
     fn execute_status(&mut self) -> Result<ExitStatus> {
         execute_status(self)
+    }
+
+    fn execute_output(&mut self) -> Result<Output> {
+        execute_output(self)
     }
 
     fn execute_string(&mut self) -> Result<String> {
@@ -35,6 +40,10 @@ pub fn status(command_string: impl AsRef<str>) -> Result<ExitStatus> {
     execute_status(&mut parse(command_string)?)
 }
 
+pub fn output(command_string: impl AsRef<str>) -> Result<Output> {
+    execute_output(&mut parse(command_string)?)
+}
+
 pub fn string(command_string: impl AsRef<str>) -> Result<String> {
     execute_string(&mut parse(command_string)?)
 }
@@ -48,13 +57,19 @@ fn execute_status(command: &mut Command) -> Result<ExitStatus> {
     }
 }
 
-fn execute_string(command: &mut Command) -> Result<String> {
+fn execute_output(command: &mut Command) -> Result<Output> {
     let output = command.output()?;
 
     match output.status.success() {
-        true => Ok(String::from_utf8(output.stdout)?),
+        true => Ok(output),
         false => Err(Error::Output(output)),
     }
+}
+
+fn execute_string(command: &mut Command) -> Result<String> {
+    let output = execute_output(command)?;
+
+    Ok(String::from_utf8(output.stdout)?)
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -111,6 +126,19 @@ mod tests {
         assert!(Command::parse(format!("{BASE_COMMAND} 'exit 1'"))
             .unwrap()
             .execute_status()
+            .is_err());
+    }
+
+    #[test]
+    fn test_execute_output() {
+        assert!(Command::parse(format!("{BASE_COMMAND} 'exit 0'"))
+            .unwrap()
+            .execute_output()
+            .is_ok());
+
+        assert!(Command::parse(format!("{BASE_COMMAND} 'exit 1'"))
+            .unwrap()
+            .execute_output()
             .is_err());
     }
 
