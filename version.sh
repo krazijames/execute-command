@@ -59,8 +59,6 @@ echo
 
 # Commit changes and create tag
 echo Committing changes ...
-git add \
-    Cargo.toml \
-    CHANGELOG.md
+git add Cargo.toml
 git commit --message v$NEW_VERSION
 git tag v$NEW_VERSION
