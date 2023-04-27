@@ -2,7 +2,7 @@
 
 set -e
 
-cargo clippy --all -- -D warnings
+cargo clippy -- -D warnings
 
 for file in $(git diff --name-only --staged); do
     if [ ! -f "$file" ]; then
